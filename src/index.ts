@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { checkSaunaAvailability } from './pageScraper';
 import { alertSaunaAvailability } from './emailSender';
 

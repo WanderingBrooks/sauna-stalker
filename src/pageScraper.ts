@@ -1,5 +1,3 @@
-import 'dotenv'
-
 import puppeteer from 'puppeteer';
 
 import log from './log'
@@ -106,7 +104,7 @@ const checkSaunaAvailability = async () => {
   log(`Something went wrong when parsing page. Check if page has updated`); 
  }
 
- log(`Found login status { isBookable: ${isBookable}`);
+ log(`Found login status { isBookable: ${isBookable} }`);
 
  await browser.close();
  log('Closed browser')
