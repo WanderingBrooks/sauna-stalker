@@ -4,7 +4,8 @@
   "type": "module",
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/nodemailer": "^6.4.17"
+    "@types/nodemailer": "^6.4.17",
+    "ts-node": "^10.9.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
