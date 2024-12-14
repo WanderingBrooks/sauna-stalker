@@ -7,6 +7,7 @@ const {
   PASSWORD,
   LOGIN_URL,
   SAUNA_URL,
+  IS_RASPBERRY_PI,
 } = process.env;
 
 if (!LOGIN_URL) {
@@ -24,7 +25,17 @@ if (!SAUNA_URL) {
 
 const checkSaunaAvailability = async () => {
   // Launch the browser and open a new blank page
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch(
+    IS_RASPBERRY_PI === 'true'
+    ? {
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      }
+    : {
+      headless: true,
+    }
+  );
   
   log('Launched browser')
 
