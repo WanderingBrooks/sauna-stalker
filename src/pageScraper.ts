@@ -13,12 +13,15 @@ const {
 if (!LOGIN_URL) {
   throw new Error('Login url is required')
 }
+
 if (!EMAIL) {
   throw new Error('Email is required')
 }
+
 if (!PASSWORD) {
   throw new Error('Password is required')
 }
+
 if (!SAUNA_URL) {
   throw new Error('Sauna url is required')
 }
@@ -33,7 +36,7 @@ const checkSaunaAvailability = async () => {
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       }
     : {
-      headless: true,
+      headless: false,
     }
   );
   
@@ -74,53 +77,31 @@ const checkSaunaAvailability = async () => {
   await page.goto(`${SAUNA_URL}&passDate=${currentDate}`);
   log('Navigated to sauna url');
   
-  const isBookable = await page.evaluate(() => {
-    const getTimeSlot = () => {
-      const hour = new Date().getHours();
-    
-      if (hour >= 18 && hour < 20) {
-        return 7;
-      }
-    
-      if (hour >= 20 && hour < 22) {
-        return 8;
-      }
-    }
-
-    // Sunday is 0, Saturday is 6
-    const currendDayOfTheWeekIndexAmerican = new Date().getDay()
-    const currendDayOfTheWeekIndexNormal = currendDayOfTheWeekIndexAmerican === 0
-      ? 6
-      : currendDayOfTheWeekIndexAmerican - 1;
-
+  const slotStatuses = await page.evaluate(() => {
     const dayColumns = document.querySelectorAll('.dayColumn');
 
+    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column, index) => {
+      const children = column?.children;
 
-    const currentDayColumn = dayColumns?.[currendDayOfTheWeekIndexNormal];
+      const slotsWithStatus = Array.from(children)
+        // Filter our non timeslot items
+        .filter(child => child.classList.contains('interval'))
+        .map(child => ({
+          isAvailable: child.classList.contains('bookable'),
+          slot: (Array.from(child?.children)?.[0] as HTMLElement)?.innerText?.replace('\n', '')
+        }))
+        .filter(slot => slot.slot)
 
-    const children = currentDayColumn?.children;
+      return {
+        ...reduced,
+        [index]: slotsWithStatus
+      }
+    }, {})
 
-    const timeSlot = getTimeSlot();
-
-    if (!timeSlot || !children) {
-      return null;
-    }
-
-    const currentSlot = children[timeSlot];
-
-    return currentSlot.classList.contains('bookable');
+   return statusPerSlot;
  });
 
- if (isBookable === null) {
-  log(`Something went wrong when parsing page. Check if page has updated`); 
- }
-
- log(`Found login status { isBookable: ${isBookable} }`);
-
- await browser.close();
- log('Closed browser')
-
- return isBookable
+ console.log(JSON.stringify(slotStatuses, null, 2));
 }
 
 export { checkSaunaAvailability };
