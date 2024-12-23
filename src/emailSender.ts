@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer'
 
 import log from './log';
+import { Slot } from './types';
 
 const {
   EMAIL_SERVICE,
@@ -43,18 +44,42 @@ const mailOptions = {
   from: EMAIL_USER,
   to: EMAIL_USER,
   subject: "Sauna slot available!",
-  text: "Sauna slot available!",
 };
 
+const daysOfTheWeek = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+]
 
-const alertSaunaAvailability = () => {
-  log('Sending email alerting sauna is available');
+const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) => 
+  Object.keys(openSixOrEightSlots).reduce((aggregatedText, day) => {
+    const keyAsNumber = Number.parseInt(day, 10);
+    const dayOfTheWeek = daysOfTheWeek[keyAsNumber];
+    const availableTimes = openSixOrEightSlots[keyAsNumber]?.map(slot => slot.time)?.join (', ');
 
-  return transporter.sendMail(mailOptions).then(result => {
+    const newMessage = `${dayOfTheWeek}: [${availableTimes}]`
+
+    return `${aggregatedText}${newMessage}\n`
+  }, '')
+
+
+const alertSaunaAvailability = (openSixOrEightSlots: Record<number, Slot[]>) => {
+  log(`Preparing to send email with slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`);
+
+  const message = prepareSlotsForEmail(openSixOrEightSlots);
+
+  log(`Sending email alerting sauna is available: "${message}"`);
+
+  return transporter.sendMail({ ...mailOptions, text: message }).then(result => {
     log('Successfully sent email');
 
     return result;
-  })
+  });
 };
 
 export { alertSaunaAvailability };
