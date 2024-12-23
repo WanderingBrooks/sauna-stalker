@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import log from './log'
+import { Day } from './types'
 
 const {
   EMAIL,
@@ -80,7 +81,7 @@ const checkSaunaAvailability = async () => {
   const slotStatuses = await page.evaluate(() => {
     const dayColumns = document.querySelectorAll('.dayColumn');
 
-    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column, index) => {
+    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column) => {
       const children = column?.children;
 
       const slotsWithStatus = Array.from(children)
@@ -88,20 +89,22 @@ const checkSaunaAvailability = async () => {
         .filter(child => child.classList.contains('interval'))
         .map(child => ({
           isAvailable: child.classList.contains('bookable'),
-          slot: (Array.from(child?.children)?.[0] as HTMLElement)?.innerText?.replace('\n', '')
+          time: (Array.from(child?.children)?.[0] as HTMLElement)?.innerText?.replace('\n', '')
         }))
-        .filter(slot => slot.slot)
+        .filter(slot => slot.time)
 
-      return {
+      return [
         ...reduced,
-        [index]: slotsWithStatus
-      }
-    }, {})
+        slotsWithStatus
+      ]
+    }, [] as Day[])
 
    return statusPerSlot;
  });
 
- console.log(JSON.stringify(slotStatuses, null, 2));
+ log(`extracted: ${JSON.stringify(slotStatuses, null, 2)}`);
+
+ return slotStatuses
 }
 
 export { checkSaunaAvailability };
