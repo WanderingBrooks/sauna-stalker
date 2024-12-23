@@ -8,4 +8,7 @@ set -a  # Automatically export variables
 source "$SCRIPT_DIR/.env"
 set +a  # Disable automatic export
 
-$(which node) $SCRIPT_DIR/dist/index.js;
+# Make the logs directory if it doesn't exist
+mkdir -p "$SCRIPT_DIR/logs"
+
+$(which node) $SCRIPT_DIR/dist/index.js >> $SCRIPT_DIR/logs/log_$(date +'%Y-%m-%d_%H-%M-%S').log 2>&1;
