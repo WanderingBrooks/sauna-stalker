@@ -17,5 +17,5 @@
 2. Install packages `npm install`
 3. Build `npm run build`
 4. Open crontab `crontab -e`
-5. Add your a line that will run this job. `* * * * *     (. ~/Desktop/sauna-stalker/cronjob.env.sh; ~/Desktop/sauna-stalker/script.sh ) >> ~/Desktop/sauna-stalker/file.log 2>&1`
+5. Add your a line that will run this job. `* * * * * (. ~/Desktop/sauna-stalker/cronjob.env.sh; ~/Desktop/sauna-stalker/script.sh)`
 6. Logs should end up in `~/Desktop/sauna-stalker/file.log`
