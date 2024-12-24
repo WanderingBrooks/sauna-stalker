@@ -28,7 +28,7 @@ const compareResultWithPreviousRun = async (
   }
 
   log(
-    `Found previous run with contents: ${(JSON.stringify(previousRun), null, 2)}`,
+    `Found previous run with contents: ${JSON.stringify(previousRun, null, 2)}`,
   );
 
   return Object.keys(openSixOrEightSlots).reduce(
