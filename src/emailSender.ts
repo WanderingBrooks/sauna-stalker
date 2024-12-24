@@ -85,11 +85,13 @@ const alertSaunaAvailability = (
 
   log(`Sending email alerting sauna is available: "${message}"`);
 
-  // return transporter.sendMail({ ...mailOptions, text: message }).then(result => {
-  //   log('Successfully sent email');
+  return transporter
+    .sendMail({ ...mailOptions, text: message })
+    .then((result) => {
+      log('Successfully sent email');
 
-  //   return result;
-  // });
+      return result;
+    });
 };
 
 export { alertSaunaAvailability };
