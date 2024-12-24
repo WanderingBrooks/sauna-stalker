@@ -1,32 +1,37 @@
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
 
 import log from './log';
 import { Slot } from './types';
 
-const {
-  EMAIL_SERVICE,
-  EMAIL_HOST,
-  EMAIL_PORT,
-  EMAIL_USER,
-  EMAIL_PASSWORD,
-} = process.env;
+const { EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } =
+  process.env;
 
 if (
-  !EMAIL_SERVICE || !EMAIL_HOST || !EMAIL_PORT || !EMAIL_USER || !EMAIL_PASSWORD
+  !EMAIL_SERVICE ||
+  !EMAIL_HOST ||
+  !EMAIL_PORT ||
+  !EMAIL_USER ||
+  !EMAIL_PASSWORD
 ) {
-  throw new Error(`Misconfigured email settings: ${JSON.stringify({
-    EMAIL_SERVICE,
-    EMAIL_HOST,
-    EMAIL_PORT,
-    EMAIL_USER,
-    EMAIL_PASSWORD
-  }, null, 2)}`)
+  throw new Error(
+    `Misconfigured email settings: ${JSON.stringify(
+      {
+        EMAIL_SERVICE,
+        EMAIL_HOST,
+        EMAIL_PORT,
+        EMAIL_USER,
+        EMAIL_PASSWORD,
+      },
+      null,
+      2,
+    )}`,
+  );
 }
 
 const emailPortAsNumber = Number.parseInt(EMAIL_PORT, 10);
 
 if (Number.isNaN(emailPortAsNumber)) {
-  throw new Error('EMAIL_PORT must be a parseable number')
+  throw new Error('EMAIL_PORT must be a parseable number');
 }
 
 const transporter = nodemailer.createTransport({
@@ -43,7 +48,7 @@ const transporter = nodemailer.createTransport({
 const mailOptions = {
   from: EMAIL_USER,
   to: EMAIL_USER,
-  subject: "Sauna slot available!",
+  subject: 'Sauna slot available!',
 };
 
 const daysOfTheWeek = [
@@ -54,32 +59,37 @@ const daysOfTheWeek = [
   'friday',
   'saturday',
   'sunday',
-]
+];
 
-const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) => 
+const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) =>
   Object.keys(openSixOrEightSlots).reduce((aggregatedText, day) => {
     const keyAsNumber = Number.parseInt(day, 10);
     const dayOfTheWeek = daysOfTheWeek[keyAsNumber];
-    const availableTimes = openSixOrEightSlots[keyAsNumber]?.map(slot => slot.time)?.join (', ');
+    const availableTimes = openSixOrEightSlots[keyAsNumber]
+      ?.map((slot) => slot.time)
+      ?.join(', ');
 
-    const newMessage = `${dayOfTheWeek}: [${availableTimes}]`
+    const newMessage = `${dayOfTheWeek}: [${availableTimes}]`;
 
-    return `${aggregatedText}${newMessage}\n`
-  }, '')
+    return `${aggregatedText}${newMessage}\n`;
+  }, '');
 
-
-const alertSaunaAvailability = (openSixOrEightSlots: Record<number, Slot[]>) => {
-  log(`Preparing to send email with slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`);
+const alertSaunaAvailability = (
+  openSixOrEightSlots: Record<number, Slot[]>,
+) => {
+  log(
+    `Preparing to send email with slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`,
+  );
 
   const message = prepareSlotsForEmail(openSixOrEightSlots);
 
   log(`Sending email alerting sauna is available: "${message}"`);
 
-  return transporter.sendMail({ ...mailOptions, text: message }).then(result => {
-    log('Successfully sent email');
+  // return transporter.sendMail({ ...mailOptions, text: message }).then(result => {
+  //   log('Successfully sent email');
 
-    return result;
-  });
+  //   return result;
+  // });
 };
 
 export { alertSaunaAvailability };
