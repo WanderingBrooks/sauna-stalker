@@ -1,14 +1,15 @@
 {
   "name": "sauna-stalker",
   "module": "index.ts",
-  "dev": "tsc --watch",     
+  "dev": "tsc --watch",
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"  
+    "start": "node dist/index.js"
   },
   "devDependencies": {
     "@types/nodemailer": "^6.4.17",
+    "prettier": "^3.4.2",
     "ts-node": "^10.9.2"
   },
   "peerDependencies": {
