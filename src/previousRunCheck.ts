@@ -27,7 +27,9 @@ const compareResultWithPreviousRun = async (
     return openSixOrEightSlots;
   }
 
-  log(`Found previous run with contents: ${previousRun}`);
+  log(
+    `Found previous run with contents: ${(JSON.stringify(previousRun), null, 2)}`,
+  );
 
   return Object.keys(openSixOrEightSlots).reduce(
     (slotsThatHaveNotBeenAlertedYet, dayOfTheWeekString) => {
