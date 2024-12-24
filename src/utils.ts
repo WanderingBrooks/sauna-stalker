@@ -2,6 +2,8 @@ import fs from 'fs';
 import log from './log';
 
 const readJsonFile = async (filePath: string): Promise<unknown | null> => {
+  log(`[readJsonFile]: Attempting to read file at path: "${filePath}"`);
+
   try {
     if (fs.existsSync(filePath)) {
       const fileContent = await fs.promises.readFile(filePath, 'utf-8');

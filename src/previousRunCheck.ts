@@ -16,6 +16,7 @@ const compareResultWithPreviousRun = async (
     Slot[]
   > | null;
 
+  // Update previous run json with the current result
   await writeJsonFile(
     previousRunFilePath,
     JSON.stringify(openSixOrEightSlots, null, 2),
@@ -38,6 +39,7 @@ const compareResultWithPreviousRun = async (
       const slotsInWeek = openSixOrEightSlots[dayOfTheWeek];
       const slotsInWeekPreviousRun = previousRun[dayOfTheWeek];
 
+      // Keep slots that were available now but not avaialabe before.
       const slotsToKeep = slotsInWeek.filter(
         (slot) =>
           slotsInWeekPreviousRun.find(
