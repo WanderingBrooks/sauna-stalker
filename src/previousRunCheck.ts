@@ -9,7 +9,9 @@ const previousRunFilePath = path.resolve(__dirname, '../previousRun.json');
 const compareResultWithPreviousRun = async (
   openSixOrEightSlots: Record<number, Slot[]>,
 ) => {
-  log('Comparing previous run');
+  log(
+    `Comparing previous run against current open slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`,
+  );
 
   const previousRun = (await readJsonFile(previousRunFilePath)) as Record<
     number,
@@ -40,12 +42,14 @@ const compareResultWithPreviousRun = async (
       const slotsInWeekPreviousRun = previousRun[dayOfTheWeek];
 
       // Keep slots that were available now but not avaialabe before.
-      const slotsToKeep = slotsInWeek.filter(
-        (slot) =>
-          slotsInWeekPreviousRun.find(
-            (slotInPreviousRun) => slotInPreviousRun.time === slot.time,
-          )?.isAvailable === false,
-      );
+      const slotsToKeep = slotsInWeek.filter((slot) => {
+        const slotInPreviousWeek = slotsInWeekPreviousRun.find(
+          (slotInPreviousRun) => slotInPreviousRun.time === slot.time,
+        );
+
+        // If the slot was in the previous object it means it was bookable
+        return !slotInPreviousWeek;
+      });
 
       if (slotsToKeep.length > 0) {
         return {
