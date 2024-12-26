@@ -10,5 +10,6 @@ set +a  # Disable automatic export
 
 # Make the logs directory if it doesn't exist
 mkdir -p "$SCRIPT_DIR/logs"
+mkdir -p "/tmp/sauna-stalker"
 
-$(which node) $SCRIPT_DIR/dist/index.js >> $SCRIPT_DIR/logs/log_$(date +'%Y-%m-%d_%H-%M').log 2>&1;
+$(which node) $SCRIPT_DIR/dist/index.js >> /tmp/sauna-stalker/log_$(date +'%Y-%m-%d_%H-%M').log 2>&1;
