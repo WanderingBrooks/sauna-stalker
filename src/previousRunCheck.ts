@@ -43,7 +43,7 @@ const compareResultWithPreviousRun = async (
 
       // Keep slots that were available now but not avaialabe before.
       const slotsToKeep = slotsInWeek.filter((slot) => {
-        const slotInPreviousWeek = slotsInWeekPreviousRun.find(
+        const slotInPreviousWeek = slotsInWeekPreviousRun?.find(
           (slotInPreviousRun) => slotInPreviousRun.time === slot.time,
         );
 
