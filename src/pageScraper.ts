@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { Page } from 'puppeteer';
 
 import log from './log';
 import { Day } from './types';
@@ -20,6 +20,30 @@ if (!PASSWORD) {
 if (!SAUNA_URL) {
   throw new Error('Sauna url is required');
 }
+
+const extractSlots = (page: Page) =>
+  page.evaluate(() => {
+    const dayColumns = document.querySelectorAll('.dayColumn');
+
+    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column) => {
+      const children = column?.children;
+
+      const slotsWithStatus = Array.from(children)
+        // Filter our non timeslot items
+        .filter((child) => child.classList.contains('interval'))
+        .map((child) => ({
+          isAvailable: child.classList.contains('bookable'),
+          time: (
+            Array.from(child?.children)?.[0] as HTMLElement
+          )?.innerText?.replace('\n', ''),
+        }))
+        .filter((slot) => slot.time);
+
+      return [...reduced, slotsWithStatus];
+    }, [] as Day[]);
+
+    return statusPerSlot;
+  });
 
 const checkSaunaAvailability = async () => {
   // Launch the browser and open a new blank page
@@ -70,34 +94,43 @@ const checkSaunaAvailability = async () => {
 
   // Navigate to the sauna booking page
   await page.goto(`${SAUNA_URL}&passDate=${currentDate}`);
-  log('Navigated to sauna url');
+  log('Navigated to current week sauna url');
 
-  const slotStatuses = await page.evaluate(() => {
-    const dayColumns = document.querySelectorAll('.dayColumn');
+  const currentWeekSlotStatuses = await extractSlots(page);
 
-    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column) => {
-      const children = column?.children;
+  log(
+    `extracted current week statuses: ${JSON.stringify(currentWeekSlotStatuses, null, 2)}`,
+  );
 
-      const slotsWithStatus = Array.from(children)
-        // Filter our non timeslot items
-        .filter((child) => child.classList.contains('interval'))
-        .map((child) => ({
-          isAvailable: child.classList.contains('bookable'),
-          time: (
-            Array.from(child?.children)?.[0] as HTMLElement
-          )?.innerText?.replace('\n', ''),
-        }))
-        .filter((slot) => slot.time);
+  const nextWeekMonday = new Date();
 
-      return [...reduced, slotsWithStatus];
-    }, [] as Day[]);
+  const currentDayAmerican = nextWeekMonday.getDay();
 
-    return statusPerSlot;
-  });
+  const currentDayNormal =
+    currentDayAmerican === 0 ? 6 : currentDayAmerican - 1;
 
-  log(`extracted: ${JSON.stringify(slotStatuses, null, 2)}`);
+  nextWeekMonday.setDate(
+    // Add to the current date 7 - the current day of the week
+    // so that we get into the next week
+    nextWeekMonday.getDate() + (7 - currentDayNormal),
+  );
 
-  return slotStatuses;
+  const nextWeekDate = nextWeekMonday.toISOString().split('T')[0];
+
+  // Navigate to the sauna booking page
+  await page.goto(`${SAUNA_URL}&passDate=${nextWeekDate}`);
+  log('Navigated to next week sauna url');
+
+  const nextWeekSlotStatuses = await extractSlots(page);
+
+  log(
+    `extracted next week statuses: ${JSON.stringify(nextWeekSlotStatuses, null, 2)}`,
+  );
+
+  return {
+    thisWeek: currentWeekSlotStatuses,
+    nextWeek: nextWeekSlotStatuses,
+  };
 };
 
 export { checkSaunaAvailability };
