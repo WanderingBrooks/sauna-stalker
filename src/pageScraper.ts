@@ -1,7 +1,7 @@
 import puppeteer from 'puppeteer';
 
 import log from './log';
-import { Day } from './types';
+import { Day, Week } from './types';
 
 const { EMAIL, PASSWORD, LOGIN_URL, SAUNA_URL, IS_RASPBERRY_PI } = process.env;
 
@@ -21,7 +21,32 @@ if (!SAUNA_URL) {
   throw new Error('Sauna url is required');
 }
 
-const checkSaunaAvailability = async () => {
+const getDateToCheck = (week: Week) => {
+  if (week === 'thisWeek') {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  if (week === 'nextWeek') {
+    const nextWeekMonday = new Date();
+
+    const currentDayAmerican = nextWeekMonday.getDay();
+
+    const currentDayNormal =
+      currentDayAmerican === 0 ? 6 : currentDayAmerican - 1;
+
+    nextWeekMonday.setDate(
+      // Add to the current date 7 - the current day of the week
+      // so that we get into the next week
+      nextWeekMonday.getDate() + (7 - currentDayNormal),
+    );
+
+    return nextWeekMonday.toISOString().split('T')[0];
+  }
+
+  throw new Error(`Unspported week type: "${week}"`);
+};
+
+const checkSaunaAvailability = async (week: Week) => {
   // Launch the browser and open a new blank page
   const browser = await puppeteer.launch(
     IS_RASPBERRY_PI === 'true'
@@ -66,11 +91,11 @@ const checkSaunaAvailability = async () => {
 
   log('Menu appeared after login');
 
-  const currentDate = new Date().toISOString().split('T')[0];
+  const dateToCheck = getDateToCheck(week);
 
   // Navigate to the sauna booking page
-  await page.goto(`${SAUNA_URL}&passDate=${currentDate}`);
-  log('Navigated to sauna url');
+  await page.goto(`${SAUNA_URL}&passDate=${dateToCheck}`);
+  log(`Navigated to sauna url with date: "${dateToCheck}"`);
 
   const slotStatuses = await page.evaluate(() => {
     const dayColumns = document.querySelectorAll('.dayColumn');

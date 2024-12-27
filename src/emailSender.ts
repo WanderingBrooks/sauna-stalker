@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 import log from './log';
-import { Slot } from './types';
+import { Slot, Week } from './types';
 
 const { EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } =
   process.env;
@@ -48,7 +48,6 @@ const transporter = nodemailer.createTransport({
 const mailOptions = {
   from: EMAIL_USER,
   to: EMAIL_USER,
-  subject: 'Sauna slot available!',
 };
 
 const daysOfTheWeek = [
@@ -60,6 +59,18 @@ const daysOfTheWeek = [
   'saturday',
   'sunday',
 ];
+
+const getHeader = (week: Week) => {
+  if (week === 'thisWeek') {
+    return `Sauna slot available this week!`;
+  }
+
+  if (week === 'nextWeek') {
+    return `Sauna slot available next week!`;
+  }
+
+  return `Got a weird week in [getHeader]: "${week}"`;
+};
 
 const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) =>
   Object.keys(openSixOrEightSlots).reduce((aggregatedText, day) => {
@@ -75,6 +86,7 @@ const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) =>
   }, '');
 
 const alertSaunaAvailability = (
+  week: Week,
   openSixOrEightSlots: Record<number, Slot[]>,
 ) => {
   log(
@@ -86,7 +98,7 @@ const alertSaunaAvailability = (
   log(`Sending email alerting sauna is available: "${message}"`);
 
   return transporter
-    .sendMail({ ...mailOptions, text: message })
+    .sendMail({ ...mailOptions, text: message, subject: getHeader(week) })
     .then((result) => {
       log('Successfully sent email');
 
