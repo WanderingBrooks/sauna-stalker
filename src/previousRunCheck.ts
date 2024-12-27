@@ -1,12 +1,12 @@
 import path from 'path';
 import { readJsonFile, writeJsonFile } from './utils';
 
-import { Slot, Week } from './types';
+import { Week, AvailableSlots } from './types';
 import { log } from 'console';
 
 const compareResultWithPreviousRun = async (
   week: Week,
-  openSixOrEightSlots: Record<number, Slot[]>,
+  openSixOrEightSlots: AvailableSlots,
 ) => {
   log(
     `Comparing previous run against current open slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`,
@@ -17,10 +17,9 @@ const compareResultWithPreviousRun = async (
     `../${week}-previousRun.json`,
   );
 
-  const previousRun = (await readJsonFile(previousRunFilePath)) as Record<
-    number,
-    Slot[]
-  > | null;
+  const previousRun = (await readJsonFile(
+    previousRunFilePath,
+  )) as AvailableSlots | null;
 
   // Update previous run json with the current result
   await writeJsonFile(
@@ -38,12 +37,16 @@ const compareResultWithPreviousRun = async (
     `Found previous run with contents: ${JSON.stringify(previousRun, null, 2)}`,
   );
 
-  return Object.keys(openSixOrEightSlots).reduce(
+  return Object.keys(openSixOrEightSlots).reduce<AvailableSlots>(
     (slotsThatHaveNotBeenAlertedYet, dayOfTheWeekString) => {
       const dayOfTheWeek = Number.parseInt(dayOfTheWeekString, 10);
 
       const slotsInWeek = openSixOrEightSlots[dayOfTheWeek];
       const slotsInWeekPreviousRun = previousRun[dayOfTheWeek];
+
+      if (!Array.isArray(slotsInWeek)) {
+        return slotsThatHaveNotBeenAlertedYet;
+      }
 
       // Keep slots that were available now but not avaialabe before.
       const slotsToKeep = slotsInWeek.filter((slot) => {
@@ -64,7 +67,7 @@ const compareResultWithPreviousRun = async (
 
       return slotsThatHaveNotBeenAlertedYet;
     },
-    {} as Record<string, Slot[]>,
+    {},
   );
 };
 

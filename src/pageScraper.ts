@@ -100,22 +100,25 @@ const checkSaunaAvailability = async (week: Week) => {
   const slotStatuses = await page.evaluate(() => {
     const dayColumns = document.querySelectorAll('.dayColumn');
 
-    const statusPerSlot = Array.from(dayColumns).reduce((reduced, column) => {
-      const children = column?.children;
+    const statusPerSlot = Array.from(dayColumns).reduce<Day[]>(
+      (reduced, column) => {
+        const children = column?.children;
 
-      const slotsWithStatus = Array.from(children)
-        // Filter our non timeslot items
-        .filter((child) => child.classList.contains('interval'))
-        .map((child) => ({
-          isAvailable: child.classList.contains('bookable'),
-          time: (
-            Array.from(child?.children)?.[0] as HTMLElement
-          )?.innerText?.replace('\n', ''),
-        }))
-        .filter((slot) => slot.time);
+        const slotsWithStatus = Array.from(children)
+          // Filter our non timeslot items
+          .filter((child) => child.classList.contains('interval'))
+          .map((child) => ({
+            isAvailable: child.classList.contains('bookable'),
+            time: (
+              Array.from(child?.children)?.[0] as HTMLElement
+            )?.innerText?.replace('\n', ''),
+          }))
+          .filter((slot) => slot.time);
 
-      return [...reduced, slotsWithStatus];
-    }, [] as Day[]);
+        return [...reduced, slotsWithStatus];
+      },
+      [],
+    );
 
     return statusPerSlot;
   });

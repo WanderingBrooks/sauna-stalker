@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 import log from './log';
-import { Slot, Week } from './types';
+import { AvailableSlots, Week } from './types';
 
 const { EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } =
   process.env;
@@ -72,7 +72,7 @@ const getHeader = (week: Week) => {
   return `Got a weird week in [getHeader]: "${week}"`;
 };
 
-const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) =>
+const prepareSlotsForEmail = (openSixOrEightSlots: AvailableSlots) =>
   Object.keys(openSixOrEightSlots).reduce((aggregatedText, day) => {
     const keyAsNumber = Number.parseInt(day, 10);
     const dayOfTheWeek = daysOfTheWeek[keyAsNumber];
@@ -87,7 +87,7 @@ const prepareSlotsForEmail = (openSixOrEightSlots: Record<number, Slot[]>) =>
 
 const alertSaunaAvailability = (
   week: Week,
-  openSixOrEightSlots: Record<number, Slot[]>,
+  openSixOrEightSlots: AvailableSlots,
 ) => {
   log(
     `Preparing to send email with slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`,

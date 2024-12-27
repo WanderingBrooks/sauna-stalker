@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { checkSaunaAvailability } from './pageScraper';
 import { alertSaunaAvailability } from './emailSender';
 import { compareResultWithPreviousRun } from './previousRunCheck';
-import { Slot, Week } from './types';
+import { Slot, Week, AvailableSlots } from './types';
 import log from './log';
 
 const run = async (week: Week) => {
@@ -12,7 +12,7 @@ const run = async (week: Week) => {
   const slotStatuses = await checkSaunaAvailability(week);
 
   if (slotStatuses) {
-    const openSixOrEightSlots = slotStatuses.reduce(
+    const openSixOrEightSlots = slotStatuses.reduce<AvailableSlots>(
       (reduced, day, index) => {
         const openSixOrEightSlotsInDay = day.filter(
           (slot) =>
@@ -32,7 +32,7 @@ const run = async (week: Week) => {
 
         return reduced;
       },
-      {} as Record<number, Slot[]>,
+      {},
     );
 
     const slotsFilterdByPreviousRun = await compareResultWithPreviousRun(
