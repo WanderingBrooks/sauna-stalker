@@ -1,16 +1,20 @@
 import path from 'path';
 import { readJsonFile, writeJsonFile } from './utils';
 
-import { Slot } from './types';
+import { Slot, Week } from './types';
 import { log } from 'console';
 
-const previousRunFilePath = path.resolve(__dirname, '../previousRun.json');
-
 const compareResultWithPreviousRun = async (
+  week: Week,
   openSixOrEightSlots: Record<number, Slot[]>,
 ) => {
   log(
     `Comparing previous run against current open slots: ${JSON.stringify(openSixOrEightSlots, null, 2)}`,
+  );
+
+  const previousRunFilePath = path.resolve(
+    __dirname,
+    `../${week}-previousRun.json`,
   );
 
   const previousRun = (await readJsonFile(previousRunFilePath)) as Record<

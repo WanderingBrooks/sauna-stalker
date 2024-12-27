@@ -5,4 +5,6 @@ type Slot = {
 
 type Day = Slot[];
 
-export type { Slot, Day };
+type Week = 'thisWeek' | 'nextWeek';
+
+export type { Slot, Day, Week };

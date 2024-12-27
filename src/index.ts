@@ -1,45 +1,22 @@
-import 'dotenv/config';
+import run from './runner';
+import { Week } from './types';
 
-import { checkSaunaAvailability } from './pageScraper';
-import { alertSaunaAvailability } from './emailSender';
-import { compareResultWithPreviousRun } from './previousRunCheck';
-import { Slot } from './types';
-import log from './log';
+const [rawWeek] = process.argv.slice(2);
 
-(async () => {
-  const slotStatuses = await checkSaunaAvailability();
+let week: Week | null = null;
 
-  if (slotStatuses) {
-    const openSixOrEightSlots = slotStatuses.reduce(
-      (reduced, day, index) => {
-        const openSixOrEightSlotsInDay = day.filter(
-          (slot) =>
-            slot.isAvailable &&
-            ['18:00 - 20:00', '20:00 - 22:00'].includes(slot.time),
-        );
+if (rawWeek === 'thisWeek') {
+  week = 'thisWeek';
+}
 
-        if (
-          Array.isArray(openSixOrEightSlotsInDay) &&
-          openSixOrEightSlotsInDay.length > 0
-        ) {
-          return {
-            ...reduced,
-            [index]: openSixOrEightSlotsInDay,
-          };
-        }
+if (rawWeek === 'nextWeek') {
+  week = 'nextWeek';
+}
 
-        return reduced;
-      },
-      {} as Record<number, Slot[]>,
-    );
+if (!week) {
+  throw new Error(
+    `Week argument must either be "thisWeek" or "nextWeek" but script was passed in "${rawWeek}"`,
+  );
+}
 
-    const slotsFilterdByPreviousRun =
-      await compareResultWithPreviousRun(openSixOrEightSlots);
-
-    if (Object.keys(slotsFilterdByPreviousRun).length > 0) {
-      return alertSaunaAvailability(slotsFilterdByPreviousRun);
-    }
-
-    log('Ending process, nothing to alert');
-  }
-})().then(() => process.exit(0));
+run(week).then(() => process.exit(0));
