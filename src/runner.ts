@@ -7,6 +7,8 @@ import { Slot, Week } from './types';
 import log from './log';
 
 const run = async (week: Week) => {
+  log(`Running job with week: "${week}"`);
+
   const slotStatuses = await checkSaunaAvailability(week);
 
   if (slotStatuses) {
