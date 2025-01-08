@@ -1,9 +1,9 @@
 import 'dotenv/config';
 
 import { checkSaunaAvailability } from './pageScraper';
-import { alertSaunaAvailability } from './emailSender';
+import { alertSaunaAvailability, sendRunLog } from './emailSender';
 import { compareResultWithPreviousRun } from './previousRunCheck';
-import { Slot, Week, AvailableSlots } from './types';
+import { Week, AvailableSlots } from './types';
 import log from './log';
 
 const run = async (week: Week) => {
@@ -41,11 +41,13 @@ const run = async (week: Week) => {
     );
 
     if (Object.keys(slotsFilterdByPreviousRun).length > 0) {
-      return alertSaunaAvailability(week, slotsFilterdByPreviousRun);
+      await alertSaunaAvailability(week, slotsFilterdByPreviousRun);
+    } else {
+      log('Ending process, nothing to alert');
     }
-
-    log('Ending process, nothing to alert');
   }
+
+  return sendRunLog(week);
 };
 
 export default run;

@@ -1,3 +1,10 @@
-const log = (message: string) => console.log(message);
+let fullRunLog = '';
+
+const log = (message: string) => {
+  fullRunLog += message + '\n';
+
+  return console.log(message);
+};
 
 export default log;
+export { fullRunLog };

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-import log from './log';
+import log, { fullRunLog } from './log';
 import { AvailableSlots, Week } from './types';
 
 const { EMAIL_SERVICE, EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } =
@@ -72,6 +72,18 @@ const getHeader = (week: Week) => {
   return `Got a weird week in [getHeader]: "${week}"`;
 };
 
+const getLogHeader = (week: Week) => {
+  if (week === 'thisWeek') {
+    return `This week check log`;
+  }
+
+  if (week === 'nextWeek') {
+    return `Next week check log`;
+  }
+
+  return `Got a weird week in [getLogHeader]: "${week}"`;
+};
+
 const prepareSlotsForEmail = (openSixOrEightSlots: AvailableSlots) =>
   Object.keys(openSixOrEightSlots).reduce((aggregatedText, day) => {
     const keyAsNumber = Number.parseInt(day, 10);
@@ -106,4 +118,11 @@ const alertSaunaAvailability = (
     });
 };
 
-export { alertSaunaAvailability };
+const sendRunLog = (week: Week) =>
+  transporter.sendMail({
+    ...mailOptions,
+    text: fullRunLog,
+    subject: getLogHeader(week),
+  });
+
+export { alertSaunaAvailability, sendRunLog };
